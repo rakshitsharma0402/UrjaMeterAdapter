@@ -2,6 +2,8 @@
 
 A FastAPI-based API adapter for the Urja Meter Ops portal. It exposes meter search, energy, and geolocation data through a REST API while handling upstream authentication, request validation, and errors.
 
+**Documentation:** [Protocol Documentation](PROTOCOL.md) · [OpenAPI Specification](openapi.json) · [MIT License](LICENSE)
+
 ## Features
 
 - Search meters using a query and pagination.
