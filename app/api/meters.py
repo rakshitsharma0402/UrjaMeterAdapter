@@ -12,13 +12,15 @@ from app.models.meter import (
 router = APIRouter(prefix="/api/v1/meters", tags=["Meters"])
 
 
-async def ensure_authenticated(client) -> None:
-    if not client._authenticated:
-        await client.login()
-
 
 def handle_upstream_error(exc: httpx.HTTPStatusError) -> HTTPException:
     status = exc.response.status_code
+
+    if status == 404:
+        return HTTPException(
+            status_code=404,
+            detail="Meter not found.",
+        )
 
     if status == 401:
         return HTTPException(
@@ -41,7 +43,6 @@ async def search_meters(
     client = request.app.state.urja_client
 
     try:
-        await ensure_authenticated(client)
         result = await client.search_meters(q=q, page=page)
 
         return {
@@ -73,9 +74,7 @@ async def get_meter_energy(
     client = request.app.state.urja_client
 
     try:
-        await ensure_authenticated(client)
-        result = await client.get_energy(meter_id)
-        return result
+        return await client.get_energy(meter_id)
 
     except httpx.HTTPStatusError as exc:
         raise handle_upstream_error(exc) from exc
@@ -89,9 +88,7 @@ async def get_meter_geo(
     client = request.app.state.urja_client
 
     try:
-        await ensure_authenticated(client)
-        result = await client.get_geo(meter_id)
-        return result
+        return await client.get_geo(meter_id)
 
     except httpx.HTTPStatusError as exc:
         raise handle_upstream_error(exc) from exc

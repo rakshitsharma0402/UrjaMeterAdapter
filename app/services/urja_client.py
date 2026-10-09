@@ -59,18 +59,27 @@ class UrjaClient:
 
         self._authenticated = True
 
-    async def _get(
-        self,
-        path: str,
-        params: dict | None = None,
-    ) -> dict:
-        """Make an authenticated GET request."""
+    async def ensure_authenticated(self) -> None:
+        """Log in if the client is not currently authenticated."""
         if not self._authenticated:
-            raise RuntimeError(
-                "UrjaClient is not authenticated. Call login() first."
-            )
+            await self.login()
+
+    async def _get(
+            self,
+            path: str,
+            params: dict | None = None,
+    ) -> dict:
+        """Make an authenticated GET request with one auth retry."""
+        await self.ensure_authenticated()
 
         response = await self._client.get(path, params=params)
+
+        if response.status_code == 401:
+            # The upstream session may have expired.
+            self._authenticated = False
+            await self.login()
+
+            response = await self._client.get(path, params=params)
 
         if response.status_code >= 400:
             print("Urja GET failed:", response.status_code)
