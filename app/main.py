@@ -29,3 +29,13 @@ app.include_router(meters_router)
 async def health():
     return {"status": "ok"}
 
+
+@app.get("/")
+async def root():
+    return {
+        "name": "Urja Meter Adapter",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
