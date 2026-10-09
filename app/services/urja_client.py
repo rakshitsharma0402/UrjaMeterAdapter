@@ -61,10 +61,11 @@ class UrjaClient:
         if not self._authenticated:
             await self.login()
 
+
     async def _get(
-            self,
-            path: str,
-            params: dict | None = None,
+        self,
+        path: str,
+        params: dict | None = None,
     ) -> dict:
         """Make an authenticated GET request with one auth retry."""
         await self.ensure_authenticated()
@@ -81,10 +82,10 @@ class UrjaClient:
         if response.status_code >= 400:
             print("Urja GET failed:", response.status_code)
             print("Path:", path)
-            print("Response:", response.text[:500])
 
         response.raise_for_status()
         return response.json()
+
 
     async def search_meters(
         self,
