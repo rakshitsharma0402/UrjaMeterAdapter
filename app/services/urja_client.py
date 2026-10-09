@@ -1,3 +1,4 @@
+
 import httpx
 
 from app.config import URJA_BASE_URL, URJA_EMAIL, URJA_PASSWORD
@@ -27,17 +28,42 @@ class UrjaClient:
                 "email": URJA_EMAIL,
                 "password": URJA_PASSWORD,
             },
+            headers={
+                "Origin": URJA_BASE_URL.rstrip("/"),
+                "Referer": f"{URJA_BASE_URL.rstrip('/')}/login",
+            },
         )
+
+        if response.status_code >= 400:
+            print("Urja login failed:", response.status_code)
+            print("Response:", response.text[:500])
+
         response.raise_for_status()
 
-        if not self._client.cookies.get(SESSION_COOKIE_NAME):
+        # Diagnostic checks: print cookie names, never cookie values.
+        session_cookie = self._client.cookies.get(
+            SESSION_COOKIE_NAME
+        )
+
+        if not session_cookie:
+            print("Login response status:", response.status_code)
+            print("Login response URL:", response.url)
+            print("Login response body:", response.text[:500])
+            print(
+                "Cookie names received:",
+                list(self._client.cookies.keys()),
+            )
             raise RuntimeError(
                 "Login returned without the expected session cookie."
             )
 
         self._authenticated = True
 
-    async def _get(self, path: str, params: dict | None = None) -> dict:
+    async def _get(
+        self,
+        path: str,
+        params: dict | None = None,
+    ) -> dict:
         """Make an authenticated GET request."""
         if not self._authenticated:
             raise RuntimeError(
@@ -45,6 +71,12 @@ class UrjaClient:
             )
 
         response = await self._client.get(path, params=params)
+
+        if response.status_code >= 400:
+            print("Urja GET failed:", response.status_code)
+            print("Path:", path)
+            print("Response:", response.text[:500])
+
         response.raise_for_status()
         return response.json()
 

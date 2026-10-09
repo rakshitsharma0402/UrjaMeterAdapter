@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.meters import router as meters_router
 from app.services.urja_client import UrjaClient
 
 
@@ -21,9 +22,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.include_router(meters_router)
+
 
 @app.get("/health")
 async def health():
     return {"status": "ok"}
-
 

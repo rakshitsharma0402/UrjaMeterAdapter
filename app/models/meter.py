@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Meter(BaseModel):
@@ -23,7 +23,7 @@ class EnergyReading(BaseModel):
     timestamp: str
     kwh: str
     kvah: str
-    volt_r: str
+    volt_r: str = Field(validation_alias="voltR")
 
 
 class EnergyResponse(BaseModel):
