@@ -6,6 +6,9 @@ from app.config import URJA_BASE_URL, URJA_EMAIL, URJA_PASSWORD
 
 SESSION_COOKIE_NAME = "__Secure-better-auth.session_token"
 
+class UrjaAuthenticationError(Exception):
+    """Raised when authentication with the Urja portal fails."""
+
 
 class UrjaClient:
     def __init__(self) -> None:
@@ -18,8 +21,8 @@ class UrjaClient:
     async def login(self) -> None:
         """Authenticate and retain the upstream session cookie."""
         if not URJA_EMAIL or not URJA_PASSWORD:
-            raise RuntimeError(
-                "URJA_EMAIL and URJA_PASSWORD must be configured."
+            raise UrjaAuthenticationError(
+                "Urja credentials are not configured."
             )
 
         response = await self._client.post(
@@ -46,18 +49,12 @@ class UrjaClient:
         )
 
         if not session_cookie:
-            print("Login response status:", response.status_code)
-            print("Login response URL:", response.url)
-            print("Login response body:", response.text[:500])
-            print(
-                "Cookie names received:",
-                list(self._client.cookies.keys()),
-            )
-            raise RuntimeError(
-                "Login returned without the expected session cookie."
+            raise UrjaAuthenticationError(
+                "Urja login failed to establish a session."
             )
 
         self._authenticated = True
+
 
     async def ensure_authenticated(self) -> None:
         """Log in if the client is not currently authenticated."""

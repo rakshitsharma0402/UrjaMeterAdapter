@@ -2,6 +2,7 @@
 import httpx
 
 from fastapi import APIRouter, HTTPException, Query, Request
+from app.services.urja_client import UrjaAuthenticationError
 
 from app.models.meter import (
     EnergyResponse,
@@ -62,6 +63,12 @@ async def search_meters(
             "page_size": result["pageSize"],
         }
 
+    except UrjaAuthenticationError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Upstream authentication failed.",
+        ) from exc
+
     except httpx.HTTPStatusError as exc:
         raise handle_upstream_error(exc) from exc
 
@@ -76,6 +83,12 @@ async def get_meter_energy(
     try:
         return await client.get_energy(meter_id)
 
+    except UrjaAuthenticationError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Upstream authentication failed.",
+        ) from exc
+
     except httpx.HTTPStatusError as exc:
         raise handle_upstream_error(exc) from exc
 
@@ -89,6 +102,12 @@ async def get_meter_geo(
 
     try:
         return await client.get_geo(meter_id)
+
+    except UrjaAuthenticationError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Upstream authentication failed.",
+        ) from exc
 
     except httpx.HTTPStatusError as exc:
         raise handle_upstream_error(exc) from exc
