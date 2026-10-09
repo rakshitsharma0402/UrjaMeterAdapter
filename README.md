@@ -339,6 +339,21 @@ The suite has been verified with **7 passing tests**.
 - Avoid exposing sensitive upstream responses to API consumers.
 - Use appropriate secret management and HTTPS configuration when deploying the application.
 
+## Design Trade-offs
+
+- **Session-cookie authentication:** The adapter reuses the upstream portal's session cookie instead of requiring API consumers to authenticate directly with the portal. This simplifies client integration but couples the adapter to the upstream authentication mechanism.
+- **Single retry:** The client reauthenticates and retries once after HTTP 401. This handles expired sessions without risking an unbounded retry loop.
+- **Pydantic response models:** Explicit response models provide a predictable API contract and normalize upstream field names. However, changes in the upstream response structure may require corresponding model updates.
+- **Thin adapter architecture:** The adapter focuses on authentication, data retrieval, validation, and error translation rather than storing data locally. This keeps the implementation simple but makes request availability dependent on the upstream service.
+
+## Reflection
+
+This project provided practical experience building an asynchronous REST API adapter with FastAPI and HTTPX. It involved integrating with a session-based upstream service, translating upstream responses into stable Pydantic models, handling authentication failures, and testing retry behavior.
+
+One important lesson was that a successful HTTP response alone does not guarantee successful authentication; the adapter also needs to verify that the expected session cookie was established. Automated tests helped validate both successful requests and failure scenarios.
+
+Potential future improvements include more comprehensive handling of network errors, structured logging, and additional tests for upstream response variations.
+
 ## License
 
 MIT
